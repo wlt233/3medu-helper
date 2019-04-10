@@ -1,24 +1,33 @@
 #!/usr/bin/env python3
 # coding=utf-8
 import requests
-import re
-import json
-import time
-import os,base64,math 
+import re, json, time, os, base64, math 
 from docx import Document
-
-
-stuid = ''
-paswd = ''
-
-
+#正则表达式匹配pattern
 pattern1 = 'id="j_id1:javax.faces.ViewState:0" value="(.*?)" a'
 pattern2 = 'id="j_id1:javax.faces.ClientWindow:0" value="(.*?)" a'
 pattern3 = 'JSESSIONID=(.*?); P'
 pattern4 = "'Location': '(.*?)', 'Content-Language'"
 pattern5 = "csfcfc=(.*?); Path=/"
 
+print("欢迎使用三米教育错题整理程序 v2.0 by某魏")
 
+try:
+    with open('setting.txt', 'r') as f:
+        f.readline()
+        stuid = f.readline().replace('\n','')
+        f.readline()
+        paswd = f.readline().replace('\n','')
+except FileNotFoundError:
+    with open('setting.txt', 'w+') as f:
+        stuid = input("请输入您的id    ")
+        paswd = input("请输入您的密码  ")
+        f.write("#请在下一行键入你的id:\n")
+        f.write(stuid+'\n')
+        f.write("#请在下一行键入你的密码:\n")
+        f.write(paswd+'\n')
+
+print("正在使用 id = "+stuid+" 密码 = "+paswd+" 登陆")
 
 session = requests.Session()
 #cookies登陆 备用
@@ -239,6 +248,8 @@ for eachques in examcontent:
 document = Document()
 document.add_heading(chosenname, 0) 
 document.add_heading(str(username)+'  '+str(userid), 2)
+if not os.path.exists('./latex'):
+    os.makedirs('./latex')
 
 session.close()
 session2 = requests.Session()
