@@ -245,7 +245,7 @@ for eachques in examcontent:
             wronglist.append(solution_dict)
 
 
-document = Document()
+document = Document(os.path.join(os.getcwd(), './templates/default.docx'))
 document.add_heading(chosenname, 0) 
 document.add_heading(str(username)+'  '+str(userid), 2)
 if not os.path.exists('./latex'):
@@ -409,3 +409,4 @@ for eachsolution in wronglist:
 
 print(chosenname+".docx已保存  错题整理完成")
 document.save(chosenname+'.docx')  
+input("")
