@@ -241,7 +241,10 @@ for eachques in examcontent:
     optionslist = solution_dict["options"]
     for eachop in range(0,len(optionslist)):
         if optionslist[eachop]["rightChoice"] == False and optionslist[eachop]["selected"] == True:
-            print(solution_dict['code'], optionslist[eachop]["seqCode"])
+            try:
+                print(solution_dict['code'], optionslist[eachop]["seqCode"])
+            except KeyError:
+                print(solution_dict['itemId'], optionslist[eachop]["seqCode"])
             wronglist.append(solution_dict)
 
 
@@ -256,9 +259,12 @@ session2 = requests.Session()
 headerslatex = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36"}
 
 for eachsolution in wronglist:
-    quesid = eachsolution['code']
+    try:
+        quesid = eachsolution['code']
+    except KeyError:
+        quesid = eachsolution['itemId']
     latexlist,imglist = [],[]
-    print("正在处理 "+quesid+" 请稍等！")
+    print("正在处理 "+str(quesid)+" 请稍等！")
 
     latexi = 1
     for eachqueslatex in eachsolution['content']['latexs']:
@@ -289,17 +295,18 @@ for eachsolution in wronglist:
     #print(questext)
     doclatexi = 0
     questextdoc = document.add_paragraph('')
-    eachquesrun = questextdoc.add_run(quesid)
+    eachquesrun = questextdoc.add_run(str(quesid))
     eachquesrun.font.size = 180000
     eachquesrun.bold,eachquesrun.italic = True,True
     for eachquestext in questext:
         if eachquestext != '{$$<L>$$}':
             eachquesrun = questextdoc.add_run(eachquestext)
         else:
+            questextdoc.add_run('   ')
             pic = eachquesrun.add_picture(latexlist[doclatexi])
             picheight,picwidth = pic.height,pic.width
             pic.height,pic.width=math.floor(picheight/1.5),math.floor(picwidth/1.5)
-            questextdoc.add_run('   ')
+            questextdoc.add_run(' ')
             doclatexi += 1
     for eachdocqimg in imglist:
         pic = document.add_picture(eachdocqimg)
@@ -345,10 +352,11 @@ for eachsolution in wronglist:
             if eachoptext != '{$$<L>$$}':
                 eachoprun = optextdoc.add_run(eachoptext)
             else:
+                optextdoc.add_run('   ')
                 pic = eachoprun.add_picture(oplatexlist[docoplatexi])
                 picheight,picwidth = pic.height,pic.width
                 pic.height,pic.width=math.floor(picheight/1.5),math.floor(picwidth/1.5)
-                optextdoc.add_run('   ')
+                optextdoc.add_run('')
                 docoplatexi += 1
         for eachdocqimg in opimglist:
             pic = document.add_picture(eachdocqimg)
@@ -376,8 +384,8 @@ for eachsolution in wronglist:
             with open('./latex/'+str(quesid)+'_soluimg_'+seq+str(imgi)+'.png','wb+') as f:
                 f.write(base64.b64decode(eachquesimg['src'].replace('data:image/png;base64,','')))
                 f.close()
-                soluimglist.append('./latex/'+str(quesid)+'_soluimg_'+str(imgi)+'.png')
-                print(str(quesid)+'_soluimg_'+str(imgi)+'.png saved.')
+                soluimglist.append('./latex/'+str(quesid)+'_soluimg_'+seq+str(imgi)+'.png')
+                print(str(quesid)+'_soluimg_'+seq+str(imgi)+'.png saved.')
         solutextraw = eachsolu['content'].replace('{$$<I>$$}','')
         solutext = []
         solutexti = 0
@@ -397,10 +405,11 @@ for eachsolution in wronglist:
             if eachsolutext != '{$$<L>$$}':
                 eachsolurun = solutextdoc.add_run(eachsolutext)
             else:
+                solutextdoc.add_run('   ')
                 pic = eachsolurun.add_picture(solulatexlist[docsolulatexi])
                 picheight,picwidth = pic.height,pic.width
                 pic.height,pic.width=math.floor(picheight/1.5),math.floor(picwidth/1.5)
-                solutextdoc.add_run('   ')
+                solutextdoc.add_run(' ')
                 docsolulatexi += 1
         for eachdocqimg in soluimglist:
             pic = document.add_picture(eachdocqimg)
