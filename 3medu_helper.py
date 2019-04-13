@@ -10,206 +10,241 @@ pattern3 = 'JSESSIONID=(.*?); P'
 pattern4 = "'Location': '(.*?)', 'Content-Language'"
 pattern5 = "csfcfc=(.*?); Path=/"
 
+stuid,paswd = '',''
+
+
+
+def userlogin(stuid,paswd):
+    print("正在使用 id = "+stuid+"  登陆")
+    global session
+    session = requests.Session()
+    #cookies登陆 备用
+    '''
+    raw_cookies = "Hm_lvt_9cef549829657e6fb4e3fd3fe45166d1=1553782489; Hm_lpvt_9cef549829657e6fb4e3fd3fe45166d1=1553782489; JSESSIONID=91632eb0a80ddd8a4542ea202c19"
+    cookies={}
+    for line in raw_cookies.split(';'):
+        key,value=line.split('=',1)
+        cookies[key]=value
+    print(cookies)
+    '''
+
+
+    headers = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36",
+        "Upgrade-Insecure-Requests":"1",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+        "Accept-Encoding":"gzip, deflate, br",
+        "Accept-Language": "zh-CN,zh;q=0.9",
+        "Cache-Control": "max-age=0",
+        "Connection": "keep-alive",
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Host": "corework.3medu.com",
+        "Origin": "https://corework.3medu.com"}
+    first_login = session.get("https://corework.3medu.com/login.html", headers=headers)
+    jfv = str(re.search(pattern1,first_login.text).group(1))
+    jfw = str(re.search(pattern2,first_login.text).group(1))
+    jid = str(re.search(pattern3,str(first_login.headers)).group(1))
+    #print(jfv,jfw,jid)
+
+
+    prelogin_data_str = "login-to-login=login-to-login&javax.faces.ViewState="+jfv.replace(':','%3A')+"&javax.faces.ClientWindow="+jfw.replace(':','%3A')+"&login-to-login%3Aj_idt16=login-to-login%3Aj_idt16"
+    prelogin = session.post("https://corework.3medu.com/login.html;jsessionid="+jid+"?jfwid="+jfw, data=prelogin_data_str, headers=headers)
+    jfv2 = str(re.search(pattern1,prelogin.text).group(1))
+    #print(jfv2)
+
+
+    '''
+    #这里的form data，用字典就各种500，str就没事...
+    login_data_dict = {'loginForm': 'loginForm', 
+        'loginForm%3Aj_idt19': stuid, 
+        'loginForm%3Aj_idt21': paswd, 
+        'loginForm%3Aj_idt23': r'%E7%99%BB%E5%BD%95',
+        'javax.faces.ViewState': jfv.replace(':','%3A'), 
+        'javax.faces.ClientWindow': jfw.replace(':','%3A')
+        }
+    '''
+    login_data_str = "loginForm=loginForm&loginForm%3Aj_idt19="+stuid+"&loginForm%3Aj_idt21="+paswd+r"&loginForm%3Aj_idt23=%E7%99%BB%E5%BD%95&javax.faces.ViewState="+jfv2.replace(':','%3A')+"&javax.faces.ClientWindow="+jfw.replace(':','%3A')
+    login = session.post("https://corework.3medu.com/f-login/f-login.html?jfwid="+jfw, data=login_data_str, headers=headers)
+    jfv3 = str(re.search(pattern1,login.text).group(1))
+    jfw2 = str(re.search(pattern3,str(login.headers)).group(1))+':0'
+    #print(jfv3,jfw2)
+
+
+    headers2 = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36",
+        "Upgrade-Insecure-Requests":"1",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+        "Accept-Encoding":"gzip, deflate, br",
+        "Accept-Language": "zh-CN,zh;q=0.9",
+        "Cache-Control": "max-age=0",
+        "Connection": "keep-alive",
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Host": "corework.3medu.com",
+        "Origin": "https://corework.3medu.com",
+        "Referer": "https://corework.3medu.com/f-login/f-login.html?jfwid="+jfw}
+    redirect_data_str = "login-to-redirect=login-to-redirect&javax.faces.ViewState="+jfv3.replace(':','%3A')+"&javax.faces.ClientWindow="+jfw.replace(':','%3A')+"&login-to-redirect%3Aj_idt9=login-to-redirect%3Aj_idt9"
+    redirect = session.post("https://corework.3medu.com/f-login/f-login-redirect.html?jfwid="+jfw, data=redirect_data_str, headers=headers2)#, cookies={"JSESSIONID": jfw2.replace(":0","")})
+    jfv4 = str(re.search(pattern1,redirect.text).group(1))
+
+
+
+
+
+    headers3 = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36",
+        "Upgrade-Insecure-Requests":"1",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+        "Accept-Encoding":"gzip, deflate, br",
+        "Accept-Language": "zh-CN,zh;q=0.9",
+        "Cache-Control": "max-age=0",
+        "Connection": "keep-alive",
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Host": "corework.3medu.com",
+        "Origin": "https://corework.3medu.com",
+        "Referer": "https://corework.3medu.com/portal/portal.html"+jfw,
+        "Cookie": "JSESSIONID="+jfw2.replace(":0","")}
+    adls_data_str = "TO_ADLS=TO_ADLS&javax.faces.ViewState="+jfv4.replace(':','%3A')+"&javax.faces.ClientWindow="+jfw2.replace(":0",":2")+"&TO_ADLS%3Aj_idt16=TO_ADLS%3Aj_idt16"
+    redirect2 = session.post("https://corework.3medu.com/portal/portal.html?jfwid="+jfw2.replace(":0",":2"),  headers=headers3, data=adls_data_str, allow_redirects=False)
+    callbackurl = str(re.search(pattern4,str(redirect2.headers)).group(1))
+    redirect3 = session.get(callbackurl, headers=headers3, allow_redirects=False)
+    global jfw3
+    jfw3 = str(re.search(pattern3,str(redirect3.headers)).group(1))
+    #print(jfw3)
+
+
+
+    headers4 = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36",
+        "Upgrade-Insecure-Requests":"1",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+        "Accept-Encoding":"gzip, deflate, br",
+        "Accept-Language": "zh-CN,zh;q=0.9",
+        "Cache-Control": "max-age=0",
+        "Connection": "keep-alive",
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Host": "adls.3medu.com",
+        "Referer": "https://corework.3medu.com/portal/portal.html",
+        "cookie":"JSESSIONID="+jfw3}
+    redirect4 = session.get("https://adls.3medu.com/portal.html", headers=headers4, allow_redirects=False)
+    #print(redirect4.headers)
+    csfcfc1 = str(re.search(pattern5,str(redirect4.headers)).group(1))
+
+
+    adls_cookies1 = {'JSESSIONID':jfw3,'cscfcf':csfcfc1}
+    headers_adls1 = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36",
+        "Upgrade-Insecure-Requests":"1",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+        "Accept-Encoding":"gzip, deflate, br",
+        "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+        "Cache-Control": "max-age=0",
+        "Connection": "keep-alive",
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Referer": "https://corework.3medu.com/portal/portal.html",
+        "Host": "adls.3medu.com"}
+    portal = session.get("https://adls.3medu.com/portal.html?r=1", headers=headers_adls1, cookies=adls_cookies1)
+    global csfcfc
+    csfcfc = str(re.search(pattern5,str(portal.headers)).group(1))
+    
+
+    global adls_cookies
+    global headers_adls
+    adls_cookies = {'JSESSIONID':jfw3,'csfcfc':csfcfc}
+    headers_adls = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36",
+        "Upgrade-Insecure-Requests":"1",
+        "Accept": "application/json, text/javascript, */*; q=0.01",
+        "Accept-Encoding":"gzip, deflate, br",
+        "Accept-Language": "zh-CN,zh;q=0.9",
+        "Cache-Control": "max-age=0",
+        "Connection": "keep-alive",
+        "Content-Type": "application/json;charset=UTF-8",
+        "Origin": "https://adls.3medu.com",
+        "X-Requested-With": "XMLHttpRequest",
+        "Host": "adls.3medu.com"}
+
+
+    headers_edbes = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36",
+        "Upgrade-Insecure-Requests":"1",
+        "Accept": "application/json, text/javascript, */*; q=0.01",
+        "Accept-Encoding":"gzip, deflate, br",
+        "Accept-Language": "zh-CN,zh;q=0.9",
+        "Cache-Control": "max-age=0",
+        "Connection": "keep-alive",
+        "Content-Type": "application/json;charset=UTF-8",
+        "Origin": "https://adls.3medu.com",
+        "Referer": "https://corework.3medu.com/portal/portal.html",
+        "X-Requested-With": "XMLHttpRequest",
+        "Host": "adls.3medu.com"}
+    edbes_data = {"status":"ALL"}
+    edbes = session.post("https://adls.3medu.com/rs/exam/extractDatesByExamStatus", headers=headers_edbes, cookies=adls_cookies, json=edbes_data)
+    #print(edbes.text)
+
+
+
+    headers_febd = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36",
+        "Upgrade-Insecure-Requests":"1",
+        "Accept": "application/json, text/javascript, */*; q=0.01",
+        "Accept-Encoding":"gzip, deflate, br",
+        "Accept-Language": "zh-CN,zh;q=0.9",
+        "Cache-Control": "max-age=0",
+        "Connection": "keep-alive",
+        "Content-Type": "application/json;charset=UTF-8",
+        "Origin": "https://adls.3medu.com",
+        "Referer": "https://adls.3medu.com/portal.html?r=1",
+        "X-Requested-With": "XMLHttpRequest",
+        "Host": "adls.3medu.com"}
+    febd_data = {"first":0,"amount":100,"status":"ALL","orderType":"DATE","ascending":"false"}
+    febd = session.post("https://adls.3medu.com/rs/exam/findExamsByDate", headers=headers_febd, cookies=adls_cookies, json=febd_data)
+    #print(febd.text)
+    global examlist
+    examlist = json.loads(febd.text)["content"]
+
+    info = session.get("https://adls.3medu.com/rs/user/findBasicInfo",headers=headers_febd, cookies=adls_cookies)
+    userinfo = json.loads(info.text)["content"]
+    global username
+    username = userinfo["lastName"]+userinfo["firstName"]
+    print("欢迎您！  ",username,stuid)
+    print(' ')
+
+
+
 print("欢迎使用三米教育错题整理程序 v2.0 by某魏")
-
-try:
-    with open('setting.txt', 'r') as f:
-        f.readline()
-        stuid = f.readline().replace('\n','')
-        f.readline()
-        paswd = f.readline().replace('\n','')
-except FileNotFoundError:
-    with open('setting.txt', 'w+') as f:
-        stuid = input("请输入您的id    ")
-        paswd = input("请输入您的密码  ")
-        f.write("#请在下一行键入你的id:\n")
-        f.write(stuid+'\n')
-        f.write("#请在下一行键入你的密码:\n")
-        f.write(paswd+'\n')
-
-print("正在使用 id = "+stuid+" 密码 = "+paswd+" 登陆")
-
-session = requests.Session()
-#cookies登陆 备用
-'''
-raw_cookies = "Hm_lvt_9cef549829657e6fb4e3fd3fe45166d1=1553782489; Hm_lpvt_9cef549829657e6fb4e3fd3fe45166d1=1553782489; JSESSIONID=91632eb0a80ddd8a4542ea202c19"
-cookies={}
-for line in raw_cookies.split(';'):
-    key,value=line.split('=',1)
-    cookies[key]=value
-print(cookies)
-'''
-
-
-headers = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36",
-    "Upgrade-Insecure-Requests":"1",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-    "Accept-Encoding":"gzip, deflate, br",
-    "Accept-Language": "zh-CN,zh;q=0.9",
-    "Cache-Control": "max-age=0",
-    "Connection": "keep-alive",
-    "Content-Type": "application/x-www-form-urlencoded",
-    "Host": "corework.3medu.com",
-    "Origin": "https://corework.3medu.com"}
-first_login = session.get("https://corework.3medu.com/login.html", headers=headers)
-jfv = str(re.search(pattern1,first_login.text).group(1))
-jfw = str(re.search(pattern2,first_login.text).group(1))
-jid = str(re.search(pattern3,str(first_login.headers)).group(1))
-#print(jfv,jfw,jid)
-
-
-prelogin_data_str = "login-to-login=login-to-login&javax.faces.ViewState="+jfv.replace(':','%3A')+"&javax.faces.ClientWindow="+jfw.replace(':','%3A')+"&login-to-login%3Aj_idt16=login-to-login%3Aj_idt16"
-prelogin = session.post("https://corework.3medu.com/login.html;jsessionid="+jid+"?jfwid="+jfw, data=prelogin_data_str, headers=headers)
-jfv2 = str(re.search(pattern1,prelogin.text).group(1))
-#print(jfv2)
-
-
-'''
-#这里的form data，用字典就各种500，str就没事...
-login_data_dict = {'loginForm': 'loginForm', 
-    'loginForm%3Aj_idt19': stuid, 
-    'loginForm%3Aj_idt21': paswd, 
-    'loginForm%3Aj_idt23': r'%E7%99%BB%E5%BD%95',
-    'javax.faces.ViewState': jfv.replace(':','%3A'), 
-    'javax.faces.ClientWindow': jfw.replace(':','%3A')
-    }
-'''
-login_data_str = "loginForm=loginForm&loginForm%3Aj_idt19="+stuid+"&loginForm%3Aj_idt21="+paswd+r"&loginForm%3Aj_idt23=%E7%99%BB%E5%BD%95&javax.faces.ViewState="+jfv2.replace(':','%3A')+"&javax.faces.ClientWindow="+jfw.replace(':','%3A')
-login = session.post("https://corework.3medu.com/f-login/f-login.html?jfwid="+jfw, data=login_data_str, headers=headers)
-jfv3 = str(re.search(pattern1,login.text).group(1))
-jfw2 = str(re.search(pattern3,str(login.headers)).group(1))+':0'
-#print(jfv3,jfw2)
-
-
-headers2 = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36",
-    "Upgrade-Insecure-Requests":"1",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-    "Accept-Encoding":"gzip, deflate, br",
-    "Accept-Language": "zh-CN,zh;q=0.9",
-    "Cache-Control": "max-age=0",
-    "Connection": "keep-alive",
-    "Content-Type": "application/x-www-form-urlencoded",
-    "Host": "corework.3medu.com",
-    "Origin": "https://corework.3medu.com",
-    "Referer": "https://corework.3medu.com/f-login/f-login.html?jfwid="+jfw}
-redirect_data_str = "login-to-redirect=login-to-redirect&javax.faces.ViewState="+jfv3.replace(':','%3A')+"&javax.faces.ClientWindow="+jfw.replace(':','%3A')+"&login-to-redirect%3Aj_idt9=login-to-redirect%3Aj_idt9"
-redirect = session.post("https://corework.3medu.com/f-login/f-login-redirect.html?jfwid="+jfw, data=redirect_data_str, headers=headers2)#, cookies={"JSESSIONID": jfw2.replace(":0","")})
-jfv4 = str(re.search(pattern1,redirect.text).group(1))
-
-
-
-
-
-headers3 = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36",
-    "Upgrade-Insecure-Requests":"1",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-    "Accept-Encoding":"gzip, deflate, br",
-    "Accept-Language": "zh-CN,zh;q=0.9",
-    "Cache-Control": "max-age=0",
-    "Connection": "keep-alive",
-    "Content-Type": "application/x-www-form-urlencoded",
-    "Host": "corework.3medu.com",
-    "Origin": "https://corework.3medu.com",
-    "Referer": "https://corework.3medu.com/portal/portal.html"+jfw,
-    "Cookie": "JSESSIONID="+jfw2.replace(":0","")}
-adls_data_str = "TO_ADLS=TO_ADLS&javax.faces.ViewState="+jfv4.replace(':','%3A')+"&javax.faces.ClientWindow="+jfw2.replace(":0",":2")+"&TO_ADLS%3Aj_idt16=TO_ADLS%3Aj_idt16"
-redirect2 = session.post("https://corework.3medu.com/portal/portal.html?jfwid="+jfw2.replace(":0",":2"),  headers=headers3, data=adls_data_str, allow_redirects=False)
-callbackurl = str(re.search(pattern4,str(redirect2.headers)).group(1))
-redirect3 = session.get(callbackurl, headers=headers3, allow_redirects=False)
-jfw3 = str(re.search(pattern3,str(redirect3.headers)).group(1))
-#print(jfw3)
-
-
-
-headers4 = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36",
-    "Upgrade-Insecure-Requests":"1",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-    "Accept-Encoding":"gzip, deflate, br",
-    "Accept-Language": "zh-CN,zh;q=0.9",
-    "Cache-Control": "max-age=0",
-    "Connection": "keep-alive",
-    "Content-Type": "application/x-www-form-urlencoded",
-    "Host": "adls.3medu.com",
-    "Referer": "https://corework.3medu.com/portal/portal.html",
-    "cookie":"JSESSIONID="+jfw3}
-redirect4 = session.get("https://adls.3medu.com/portal.html", headers=headers4, allow_redirects=False)
-#print(redirect4.headers)
-csfcfc1 = str(re.search(pattern5,str(redirect4.headers)).group(1))
-
-
-adls_cookies1 = {'JSESSIONID':jfw3,'cscfcf':csfcfc1}
-headers_adls = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36",
-    "Upgrade-Insecure-Requests":"1",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-    "Accept-Encoding":"gzip, deflate, br",
-    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
-    "Cache-Control": "max-age=0",
-    "Connection": "keep-alive",
-    "Content-Type": "application/x-www-form-urlencoded",
-    "Referer": "https://corework.3medu.com/portal/portal.html",
-    "Host": "adls.3medu.com"}
-portal = session.get("https://adls.3medu.com/portal.html?r=1", headers=headers_adls, cookies=adls_cookies1)
-csfcfc = str(re.search(pattern5,str(portal.headers)).group(1))
-
-
-adls_cookies = {'JSESSIONID':jfw3,'csfcfc':csfcfc}
-headers_adls = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36",
-    "Upgrade-Insecure-Requests":"1",
-    "Accept": "application/json, text/javascript, */*; q=0.01",
-    "Accept-Encoding":"gzip, deflate, br",
-    "Accept-Language": "zh-CN,zh;q=0.9",
-    "Cache-Control": "max-age=0",
-    "Connection": "keep-alive",
-    "Content-Type": "application/json;charset=UTF-8",
-    "Origin": "https://adls.3medu.com",
-    "X-Requested-With": "XMLHttpRequest",
-    "Host": "adls.3medu.com"}
-
-
-headers_edbes = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36",
-    "Upgrade-Insecure-Requests":"1",
-    "Accept": "application/json, text/javascript, */*; q=0.01",
-    "Accept-Encoding":"gzip, deflate, br",
-    "Accept-Language": "zh-CN,zh;q=0.9",
-    "Cache-Control": "max-age=0",
-    "Connection": "keep-alive",
-    "Content-Type": "application/json;charset=UTF-8",
-    "Origin": "https://adls.3medu.com",
-    "Referer": "https://corework.3medu.com/portal/portal.html",
-    "X-Requested-With": "XMLHttpRequest",
-    "Host": "adls.3medu.com"}
-edbes_data = {"status":"ALL"}
-edbes = session.post("https://adls.3medu.com/rs/exam/extractDatesByExamStatus", headers=headers_edbes, cookies=adls_cookies, json=edbes_data)
-#print(edbes.text)
-
-
-
-headers_febd = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36",
-    "Upgrade-Insecure-Requests":"1",
-    "Accept": "application/json, text/javascript, */*; q=0.01",
-    "Accept-Encoding":"gzip, deflate, br",
-    "Accept-Language": "zh-CN,zh;q=0.9",
-    "Cache-Control": "max-age=0",
-    "Connection": "keep-alive",
-    "Content-Type": "application/json;charset=UTF-8",
-    "Origin": "https://adls.3medu.com",
-    "Referer": "https://adls.3medu.com/portal.html?r=1",
-    "X-Requested-With": "XMLHttpRequest",
-    "Host": "adls.3medu.com"}
-febd_data = {"first":0,"amount":100,"status":"ALL","orderType":"DATE","ascending":"false"}
-febd = session.post("https://adls.3medu.com/rs/exam/findExamsByDate", headers=headers_febd, cookies=adls_cookies, json=febd_data)
-#print(febd.text)
-examlist = json.loads(febd.text)["content"]
-
-
-
-info = session.get("https://adls.3medu.com/rs/user/findBasicInfo",headers=headers_febd, cookies=adls_cookies)
-userinfo = json.loads(info.text)["content"]
-username = userinfo["lastName"]+userinfo["firstName"]
-userid = userinfo["identityCode"]
-print("欢迎您！  ",username,userid)
 print(' ')
+fu = 1
+if os.path.exists('setting.txt'):
+    with open('setting.txt', 'r') as f:
+        raws = f.readlines()[1:]
+    userslist = []
+    for lines in raws:
+        userslist.append(lines.replace('\n','').split())
+    if userslist != [] :
+        print("请从以下账户中选择:")
+        usersi = 1
+        for users in userslist:
+            print(str(usersi)+' '+users[0]+' '+users[1])
+            usersi += 1
+        print(str(usersi)+' 输入新的账号')
+        chosenu = int(input("键入选项前的数字并回车确定: "))
+        if chosenu != usersi:
+            chosenuser = userslist[chosenu-1]
+            stuid,paswd = chosenuser[1],chosenuser[2]
+            userlogin(stuid,paswd)
+            fu = 0
+        else:
+            fu = 1
+    else:
+        fu = 1
 
+else:
+    with open('setting.txt', 'w+') as f:
+        f.write("#请键入你的姓名，账号，密码，用空格分隔，每行一个:\n")
+
+while fu == 1:
+    stuid = input("请输入您的id    ")
+    paswd = input("请输入您的密码  ")
+    try:    
+        userlogin(stuid,paswd)
+        fu = 0
+        with open('setting.txt', 'a+') as f:
+            f.write(username+' '+stuid+' '+paswd+'\n')
+    except AttributeError:
+        print("用户名或密码似乎有点问题，请重新输入！")
+        fu = 1
 
 
 print("查询到以下测试：")
@@ -250,7 +285,7 @@ for eachques in examcontent:
 
 document = Document(os.path.join(os.getcwd(), './templates/default.docx'))
 document.add_heading(chosenname, 0) 
-document.add_heading(str(username)+'  '+str(userid), 2)
+document.add_heading(str(username)+'  '+str(stuid), 2)
 if not os.path.exists('./latex'):
     os.makedirs('./latex')
 
